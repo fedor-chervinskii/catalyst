@@ -3,10 +3,7 @@
 import time
 import numpy as np
 from srunner.challenge.random_target_runner import RandomTargetRunner
-<<<<<<< Updated upstream
-=======
 from py_trees.common import Status
->>>>>>> Stashed changes
 
 
 class CarlaWrapper:
