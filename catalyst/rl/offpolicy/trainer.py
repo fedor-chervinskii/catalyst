@@ -180,6 +180,7 @@ class Trainer:
         history_len = history_len
 
         self.logdir = logdir
+        print(logdir)
         current_date = datetime.now().strftime("%y-%m-%d-%H-%M-%S-%M-%f")
         logpath = f"{logdir}/trainer-{current_date}"
         os.makedirs(logpath, exist_ok=True)

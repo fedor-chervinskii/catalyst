@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+import carla
 
 import os
 import copy
@@ -15,6 +16,8 @@ from catalyst.utils.config import parse_args_uargs, save_config
 from catalyst.utils.misc import set_global_seeds, boolean_flag
 from catalyst.rl.offpolicy.sampler import Sampler
 import catalyst.rl.random_process as rp
+
+from catalyst.rl.environments.carla_wrapper import CarlaWrapper
 
 set_global_seeds(42)
 os.environ["OMP_NUM_THREADS"] = "1"
@@ -107,6 +110,7 @@ def run_sampler(
     if "randomized_start" in config_["env"]:
         config_["env"]["randomized_start"] = (
             config_["env"]["randomized_start"] and not infer)
+    print("starting env {} with params {}".format(environment, config_["env"]))
     env = environment(**config_["env"], visualize=vis)
     # @TODO: remove this hack
     config_["shared"]["observation_size"] = env.observation_shape[0]
@@ -190,6 +194,7 @@ def main(args, unknown_args):
     )
 
     if args.debug:
+        print("debug")
         params_ = dict(
             vis=False,
             infer=False,

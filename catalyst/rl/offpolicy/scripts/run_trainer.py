@@ -46,14 +46,6 @@ def main(args, unknown_args):
             dump_dir=args.logdir)
 
     algorithm = ALGORITHMS.get(args.algorithm)
-    if args.environment is not None:
-        # @TODO: remove this hack
-        # come on, just refactor whole rl
-        environment_fn = ENVIRONMENTS.get(args.environment)
-        env = environment_fn(**config["env"])
-        config["shared"]["observation_size"] = env.observation_shape[0]
-        config["shared"]["action_size"] = env.action_shape[0]
-        del env
     algorithm_kwargs = algorithm.prepare_for_trainer(config)
 
     redis_server = StrictRedis(port=config.get("redis", {}).get("port", 12000))

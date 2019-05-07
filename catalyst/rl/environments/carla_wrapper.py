@@ -3,6 +3,10 @@
 import time
 import numpy as np
 from srunner.challenge.random_target_runner import RandomTargetRunner
+<<<<<<< Updated upstream
+=======
+from py_trees.common import Status
+>>>>>>> Stashed changes
 
 
 class CarlaWrapper:
@@ -10,14 +14,12 @@ class CarlaWrapper:
         self,
         host="0.0.0.0",
         port=2000,
-        num_vehicles=20,
+        num_vehicles=0,
         frame_skip=1,
         visualize=False,
         reward_scale=1,
         step_delay=0.0
     ):
-        self.runner = RandomTargetRunner(host, port, num_vehicles)
-
         self.visualize = visualize
         self.frame_skip = frame_skip
         self.reward_scale = reward_scale
@@ -28,19 +30,30 @@ class CarlaWrapper:
 
         self.time_step = 0
         self.total_reward = 0
+        self.runner = RandomTargetRunner(host, port, num_vehicles)
+        self.prev_observation = None
 
     def reset(self):
         self.time_step = 0
         self.total_reward = 0
-        return self.runner.reset()
+        obs_dict = self.runner.reset()
+        self.prev_observation = obs_dict
+        return self.state_to_vec(obs_dict)
 
-    def calculate_reward(self, observation_dict, done):
+    def calculate_reward(self, observation_dict, done, status):
         if done:
-            return 1.
+            if status == Status.SUCCESS:
+                return 20.
+            else:
+                return 0.
         else:
-            return -0.01 + np.abs(observation_dict["speed"]) * 1e-4
+            delta = (self.prev_observation["goal"].distance(self.prev_observation["location"]) -
+                     observation_dict["goal"].distance(observation_dict["location"]))
+            return -0.01 + np.abs(observation_dict["speed"]) * 1e-3 + delta * 2e-2
 
     def state_to_vec(self, obs_dict):
+        if obs_dict is None:
+            return [None] * 5
         return [(obs_dict["goal"].x - obs_dict["location"].x) / 100.,
                 (obs_dict["goal"].y - obs_dict["location"].y) / 100.,
                 obs_dict["speed"] / 100.,
@@ -51,8 +64,9 @@ class CarlaWrapper:
         time.sleep(self.step_delay)
         reward = 0
         for i in range(self.frame_skip):
-            observation_dict, done = self.runner.step(action)
-            r = self.calculate_reward(observation_dict, done)
+            observation_dict, done, status = self.runner.step(action)
+            r = self.calculate_reward(observation_dict, done, status)
+            self.prev_observation = observation_dict
             observation = self.state_to_vec(observation_dict)
             if self.visualize:
                 "TBD"
@@ -61,7 +75,7 @@ class CarlaWrapper:
                 break
         self.total_reward += reward
         self.time_step += 1
-        info = observation_dict
+        info = observation_dict if observation_dict is not None else {}
         info["reward_origin"] = reward
         reward *= self.reward_scale
         return observation, reward, done, info

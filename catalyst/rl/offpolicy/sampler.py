@@ -78,7 +78,7 @@ class SamplerBuffer:
         self.action_shape = action_shape
         self.pointer = 0
         self.observations = np.empty(
-            (self.size, ) + tuple(self.observation_shape), dtype=np.float32
+            (self.size + 1, ) + tuple(self.observation_shape), dtype=np.float32
         )
         self.actions = np.empty(
             (self.size, ) + tuple(self.action_shape), dtype=np.float32
@@ -105,6 +105,7 @@ class SamplerBuffer:
         """
         s_tp1, a_t, r_t, d_t, ts_t = transition
         self.observations[self.pointer + 1] = s_tp1
+        print("actions: {}".format(a_t))
         self.actions[self.pointer] = a_t
         self.rewards[self.pointer] = r_t
         self.dones[self.pointer] = d_t
